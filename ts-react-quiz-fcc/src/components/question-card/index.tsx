@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactNode } from 'react'
 
 type QuestionCardProps = {
   question: string
@@ -17,6 +17,28 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
   questionNo,
   totalQuestions,
 }: QuestionCardProps) => {
+  const renderObjectValues = () => {
+    return Object.keys(answers).map((key: string) => {
+      const answer: string = answers[key]
+
+      if (answer === null) {
+        return
+      }
+
+      return (
+        <div key={ answer }>
+          <button
+            disabled={ userAnswer }
+            onClick={ callback }
+            value={ answer }
+          >
+            <span dangerouslySetInnerHTML={ { __html: answer } } />
+          </button>
+        </div>
+      )
+    })
+  }
+
   return (
     <div>
       <p className="number">
@@ -26,13 +48,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({
       <p dangerouslySetInnerHTML={ { __html: question } } />
 
       <div>
-        { answers.map(answer => (
-          <div>
-            <button disabled={ userAnswer } onClick={ callback }>
-              <span dangerouslySetInnerHTML={ { __html: answer } } />
-            </button>
-          </div>
-        )) }
+        { renderObjectValues() }
       </div>
     </div>
   )

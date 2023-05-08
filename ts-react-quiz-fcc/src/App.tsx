@@ -7,7 +7,7 @@ type AnswerObject = {
   question: string
   answer: string
   correct: boolean
-  correctAnswer: string
+  correctAnswer: string | null | undefined
 }
 
 const TOTAL_QUESTIONS = 10
@@ -39,7 +39,60 @@ function App() {
   }
 
   const checkAnswer = (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log('check answer')
+    if (!gameOver) {
+      const answer = e.currentTarget.value
+
+      const getCorrectAnswer = (ans: string[], correctAns: string[]): string | null => {
+        for (const key in correctAns) {
+          if (correctAns[key] === 'true') {
+            const ansKey = key.replace('_correct', '')
+
+            // eslint-disable-next-line no-prototype-builtins
+            if (ans.hasOwnProperty(ansKey)) {
+              return ans[ansKey]
+            }
+          }
+        }
+
+        return null
+      }
+
+      const getCorrectAnswerKey = (ans: string, correctAns: string[]): string | null => {
+        for (const key in correctAns) {
+          if (correctAns[key] === 'true') {
+            const ansKey = key.replace('_correct', '')
+
+            // eslint-disable-next-line no-prototype-builtins
+            if (ans.hasOwnProperty(ansKey)) {
+              return ansKey
+            }
+          }
+        }
+
+        return null
+      }
+
+      const correct = getCorrectAnswer(questions[number].answers, questions[number].correct_answers) === answer
+
+      if (correct) {
+        setScore(prevScore => prevScore + 1)
+      }
+
+      const answerObj = {
+        question: questions[number].question,
+        answer,
+        correct,
+        correctAnswer: getCorrectAnswerKey(questions[number].answers, questions[number].correct_answers),
+      }
+
+      console.log('answer obj:', answerObj)
+      
+      console.log('user answers:', userAnswers)
+
+      setUserAnswers((prev) => [...prev, answerObj])
+
+      console.log('user answers:', userAnswers)
+    }
   }
 
   const nextQuestion = () => {
@@ -56,22 +109,29 @@ function App() {
         </button>
       ) : null }
 
-      <p className="score">Score:</p>
+      { !gameOver ? <p className="score">Score:</p> : null }
 
-      <p>Loading Questions...</p>
+      { loading ? <p>Loading Questions...</p> : null }
 
-      {/* <QuestionCard
-        questionNo={number + 1}
-        totalQuestions={TOTAL_QUESTIONS}
-        question={questions[number].question}
-        answers={questions[number].answers}
-        userAnswer={userAnswers ? userAnswers[number] : undefined}
-        callback={checkAnswer}
-      /> */}
+      { !loading && !gameOver && (
+        <QuestionCard
+          questionNo={ number + 1 }
+          totalQuestions={ TOTAL_QUESTIONS }
+          question={ questions[number].question }
+          answers={ questions[number].answers }
+          userAnswer={ userAnswers ? userAnswers[number] : undefined }
+          callback={ checkAnswer }
+        />
+      ) }
 
-      <button className="next" onClick={nextQuestion}>
-        Next Question
-      </button>
+      { !gameOver &&
+        !loading &&
+        userAnswers.length === number + 1 &&
+        number !== TOTAL_QUESTIONS - 1 ? (
+          <button className="next" onClick={nextQuestion}>
+            Next Question
+          </button>
+        ) : null }
     </div>
   )
 }
